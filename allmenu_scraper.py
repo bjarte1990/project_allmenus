@@ -57,15 +57,14 @@ def get_restaurants_for_city(link):
     return restaurant_links
 
 
-def get_restaurant_details(links):
+def get_restaurant_details(links, id):
     headers = ['Location ID','Name','Address', 'City', 'State', 'Zip', 'Type', 'OverallRating', 'PriceLevel', 'PhoneNumber',
                'Website', 'GooglePlacesUrl', 'Lat', 'Lng', 'SearchTerm','Cuisine', 'Menu Section',
                'Dish Name', 'Description', 'Price', 'Extras', 'Extras Cost', 'Open Times', 'Close times',
                'Delivery', 'Reservations', 'Vegetarian', 'Spicy']
     restaurant_df = pd.DataFrame(columns=headers)
-    id = 1
     for link in links:
-        print('%d/%d' % (id, len(link)))
+        print(id)
         try:
             soup = get_soup_from_link(link)
             order_grubhub = soup.find('a', {'class': 'center-button order-button-header'})
@@ -137,20 +136,22 @@ def get_restaurant_details(links):
         except Exception as e:
             print(link)
             print(e)
-    return restaurant_df
+    return (restaurant_df, id)
 
 city_links = get_cities_in_state(ALLMENUS_LINK + '/' + STATE)
 
-#counter = 0
-restaurant_links = {}
+id = 1
 for city in city_links.keys():
     print(city)
-    restaurant_links.update(get_restaurants_for_city(city_links[city]))
+    restaurant_links = get_restaurants_for_city(city_links[city])
+    (restaurant_df, id) = get_restaurant_details(list(restaurant_links.values()), id)
+
+    restaurant_df.to_excel(city + '_restaurants.xlsx', index=False)
 
 
-#restaurant_links = get_restaurants_for_city(city_links['Tampa'])
-restaurant_df = get_restaurant_details(list(restaurant_links.values()))
-restaurant_df.to_excel('restaurants.xlsx', index=False)
+    #restaurant_links = get_restaurants_for_city(city_links['Tampa'])
+#restaurant_df = get_restaurant_details(list(restaurant_links.values()))
+#restaurant_df.to_excel('restaurants.xlsx', index=False)
 
 #restaurant_df = get_restaurant_details(['https://www.allmenus.com/fl/tampa/46455-panera-bread/menu/'])
 
